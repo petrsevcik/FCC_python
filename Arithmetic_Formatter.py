@@ -1,20 +1,13 @@
-# * Situations that will return an error:
-#   * If there are **too many problems** supplied to the function. The limit is **five**, anything more will return:
-#     `Error: Too many problems.`
-#   * The appropriate operators the function will accept are **addition** and **subtraction**. Multiplication and division will return an error. Other operators not mentioned in this bullet point will not need to be tested. The error returned will be:
-#     `Error: Operator must be '+' or '-'.`
-#   * Each number (operand) should only contain digits. Otherwise, the function will return:
-#     `Error: Numbers must only contain digits.`
-#   * Each operand (aka number on each side of the operator) has a max of four digits in width. Otherwise, the error string returned will be:
-#     `Error: Numbers cannot be more than four digits.`
 
-list_of_str = ["32 - 98888", "3801 - 2", "45 + 43", "123 + 49"]
+list_of_str = ["3 + 855", "3801 - 2", "45 + 43", "123 + 49"]
 def arithmetic_formatter(problems, boolean=False):
     #prerequisties
     valid_operators = ["+", "-"]
     first = []
+    operator = []
     second = []
-    line = "----"
+    length = []
+    line = "-"
     final_string = ""
 
     #conditions & sorting
@@ -28,26 +21,46 @@ def arithmetic_formatter(problems, boolean=False):
             return "Error: Numbers must only contain digits."
         if not (len(x) < 5 and len(y[1]) < 5):
             return "Error: Numbers cannot be more than four digits."
-        sec = "".join(y)
+        length.append(int((len(x)+2)))if len(x) > len(y[1]) else length.append(int(len(y[1])+2))
+
         first.append(x)
-        second.append(sec)
+        operator.append(y[0])
+        second.append(y[1])
 
+    length_second = [n-1 for n in length]
 
-    for number in first:
-        final_string += f"{number:>7}"
+    first_line = ""
+    second_line = ""
+    line_line = ""
+    result_line = ""
+
+    #first row
+    for i, number in enumerate(first):
+        first_line += f"{number:>{length[i]}}    "
+
+    #second row
+    for i, number in enumerate(second):
+        second_line += f"{operator[i]}{number:>{length_second[i]}}    "
+
+    #line
+    for i, dot_line in enumerate(length):
+        line_line += f"{int(dot_line)*line:>{length[i]}}    "
     final_string += "\n"
-    for number in second:
-        final_string += f"{number:>7}"
-    final_string += "\n"
-    for i in range(len(problems)):
-        final_string += f"{line:>7}"
-    final_string += "\n"
+
+    first_line.rstrip()
+    second_line.rstrip()
+    line_line.rstrip()
+
+    # result
     if boolean == True:
         results = [eval(example) for example in problems]
-        for result in results:
-            final_string += f"{result:>7}"
+        for i, result in enumerate(results):
+            result_line += f"{result:>{length[i]}}    "
+        result_line.rstrip()
+        final_string = first_line + "\n" + second_line +"\n" + line_line +"\n" + result_line
+    else:
+        final_string = first_line + "\n" + second_line + "\n" + line_line
     return final_string
 
 print(arithmetic_formatter(list_of_str))
-
 
