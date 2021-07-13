@@ -1,14 +1,10 @@
 
 class Category:
 
-
-    total_balance = 0
-
     def __init__(self, category):
         self.category = category
         self.ledger = []
         self.balance = 0
-        self.ledger.append(category)
 
     def deposit(self, amount, description=""):
         deposit_amount = {"amount":amount, "description":description}
@@ -16,40 +12,79 @@ class Category:
         self.balance += amount
 
     def check_funds(self, amount):
-        if amount > self.balance:
+        if self.balance >= amount:
             return True
-        else:
-            return False
+        return False
 
-    def withdraw(self, amount, category):
+    def withdraw(self, amount, description=""):
         if self.check_funds(amount):
             self.balance -= amount
-            purchase = (amount, category)
-            self.ledger.append(purchase)
+            self.ledger.append({"amount": -amount, "description": description})
             return True
-
-        else:
-            return False
+        return False
 
     def get_balance(self):
         return self.balance
 
-    def transfer(self, amount, budget_category):
+    def transfer(self, amount, BudgetCategory):
         if self.check_funds(amount):
-            self.deposit(amount, description=f"Transfer to {budget_category}")
-            budget_category.deposit(amount, description=f"Transfer from {self.category}")
+            self.ledger.append({"amount": -amount, "description": "Transfer to {}".format(BudgetCategory.category)})
+            self.balance -= amount
+            BudgetCategory.ledger.append({"amount": amount, "description": "Transfer from {}".format(self.category)})
+            BudgetCategory.balance += amount
             return True
-        else:
-            return False
+        return False
 
     def __str__(self):
-        return 20*"*" + self.category
+        result = ''
+        result += self.category.center(30, '*') + '\n'
+        for item in self.ledger:
+            if len(item['description']) > 23:
+                result += item['description'][0:23]
+            else:
+                result += item['description'][0:23].ljust(23)
+            result += "{0:.2f}".format(item['amount']).rjust(7)
+            result += '\n'
+        result += 'Total: {}'.format(self.balance)
+        return result
+
 
 def create_spend_chart(categories):
-    pass
+    s = "Percentage spent by category\n"
+    sum = 0
+    withdraws = {}
+    for x in categories:
+        withdraws[x.category] = 0
+        for y in x.ledger:
+            if y['amount'] < 0:
+                withdraws[x.category] += y['amount']
+        withdraws[x.category] = -withdraws[x.category]
+    for x in withdraws:
+        sum += withdraws[x]
+    for x in withdraws:
+        withdraws[x] = int(withdraws[x] / sum * 100)
 
-Food = Category("Food")
-Gas = Category("Gas")
-Party = Category("Cinema")
-Food.deposit(1000)
-print(Food)
+    for i in range(100, -10, -10):
+        s += str(i).rjust(3) + '| '
+        for x in categories:
+            if withdraws[x.category] >= i:
+                s += 'o  '
+            else:
+                s += '   '
+        s += '\n'
+    s += ' ' * 4 + '-' * (1 + len(categories) * 3) + '\n'
+
+    maxlen = 0
+    for x in categories:
+        if len(x.category) > maxlen:
+            maxlen = len(x.category)
+    for i in range(maxlen):
+        s += ' ' * 5
+        for x in categories:
+            if len(x.category) > i:
+                s += x.category[i] + '  '
+            else:
+                s += ' ' * 3
+        s += '\n'
+    return s[0:-1]
+
